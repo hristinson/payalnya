@@ -7,10 +7,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useProjectsStore } from "~/stores/projects";
+import { useProjectsAndTasksStore } from "~/stores/projectsTasksList";
 
 const projectsStore = useProjectsStore();
+const otherStore = useProjectsAndTasksStore();
 
-const visible = computed(() => projectsStore.loading);
+const visible = computed(() => projectsStore.loading || otherStore.loading);
 </script>
 
 <style scoped>

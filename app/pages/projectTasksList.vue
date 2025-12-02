@@ -1,6 +1,5 @@
 <template>
-  <div v-if="store.loading">Завантаження...</div>
-  <div v-if="store.message">{{ store.message }}</div>
+  <!-- /<div v-if="store.message">{{ store.message }}</div> -->
 
   <back-button />
 
@@ -29,7 +28,7 @@
 
 <script setup lang="ts">
 import BackButton from "~/components/BackButton.vue";
-import { useProjectsAndTasksStore } from "@/stores/projectsTasks";
+import { useProjectsAndTasksStore } from "~/stores/projectsTasksList";
 
 const store = useProjectsAndTasksStore();
 
