@@ -1,8 +1,9 @@
+import { defineStore } from "pinia";
 import { ref } from "vue";
 import axios from "axios";
 import type { Project } from "~/models";
 
-export function useProjects() {
+export const useProjectsStore = defineStore("projects", () => {
   const loading = ref(false);
   const message = ref("");
   const success = ref(false);
@@ -20,8 +21,10 @@ export function useProjects() {
 
     try {
       const res = await axios.post("/.netlify/functions/projects", projectData);
+
       message.value = `Проект "${res.data.name}" успішно додано!`;
       success.value = true;
+      projects.value.push(res.data);
       return res.data;
     } catch (err: any) {
       message.value = "Помилка при додаванні проекту: " + err.message;
@@ -29,18 +32,25 @@ export function useProjects() {
       return null;
     } finally {
       loading.value = false;
+      setTimeout(() => {
+        message.value = "";
+      }, 3000);
     }
   };
 
   const fetchProjects = async () => {
+    loading.value = true;
     try {
       const res = await axios.get("/.netlify/functions/projects");
+      projects.value = res.data;
       return res.data;
     } catch (err) {
       console.error("Не вдалося завантажити проекти:", err);
       message.value = "Не вдалося завантажити список проектів";
       success.value = false;
       return [];
+    } finally {
+      loading.value = false;
     }
   };
 
@@ -57,6 +67,7 @@ export function useProjects() {
 
     try {
       await axios.delete(`/.netlify/functions/projects/${id}`);
+
       message.value = "Проект та всі завдання видалено!";
       success.value = true;
       projects.value = projects.value.filter((p) => p.id !== id);
@@ -66,6 +77,10 @@ export function useProjects() {
       success.value = false;
     } finally {
       loading.value = false;
+      projects.value = projects.value.filter((p) => p._id !== id);
+      setTimeout(() => {
+        message.value = "";
+      }, 3000);
     }
   };
 
@@ -73,8 +88,9 @@ export function useProjects() {
     loading,
     message,
     success,
+    projects,
     addProject,
     fetchProjects,
     deleteProject,
   };
-}
+});

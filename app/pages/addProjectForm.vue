@@ -1,5 +1,6 @@
 <template>
   <BackButton />
+
   <form @submit.prevent="submitForm" class="add-project-form">
     <div>
       <label for="name">Назва проекту *</label>
@@ -29,20 +30,25 @@
       </select>
     </div>
 
-    <button type="submit" :disabled="loading">
-      {{ loading ? "Додаємо..." : "Додати проект" }}
+    <button type="submit" :disabled="store.loading">
+      {{ store.loading ? "Додаємо..." : "Додати проект" }}
     </button>
 
-    <p v-if="message" :class="{ success: success, error: !success }">
-      {{ message }}
+    <p
+      v-if="store.message"
+      :class="{ success: store.success, error: !store.success }"
+    >
+      {{ store.message }}
     </p>
   </form>
 </template>
 
 <script setup lang="ts">
 import { reactive } from "vue";
-import { useProjects } from "../hooks/useProjects";
 import BackButton from "~/components/BackButton.vue";
+import { useProjectsStore } from "~/stores/projects";
+
+const store = useProjectsStore();
 
 const form = reactive({
   id: "",
@@ -51,13 +57,8 @@ const form = reactive({
   status: "active",
 });
 
-const { loading, message, success, addProject } = useProjects();
-
 const submitForm = async () => {
-  const result = await addProject({ ...form });
-  if (result) {
-    form.name = "";
-  }
+  await store.addProject({ ...form });
 };
 </script>
 

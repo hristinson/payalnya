@@ -1,16 +1,19 @@
+import { defineStore } from "pinia";
 import { ref } from "vue";
 import axios from "axios";
 import type { Project, Task } from "~/models";
 
-export function useProjectsAndTasks() {
+export const useProjectsAndTasksStore = defineStore("projectsTasks", () => {
   const loading = ref(false);
   const message = ref("");
   const success = ref(false);
+
   const projects = ref<(Project & { tasks: Task[] })[]>([]);
 
   const fetchProjectsAndTasks = async () => {
     loading.value = true;
     message.value = "";
+
     try {
       const [projectsRes, tasksRes] = await Promise.all([
         axios.get("/.netlify/functions/projects"),
@@ -19,12 +22,10 @@ export function useProjectsAndTasks() {
 
       const tasks = tasksRes.data;
 
-      const projectsWithTasks = projectsRes.data.map((project: Project) => {
-        return {
-          ...project,
-          tasks: tasks.filter((task: Task) => task.projectId === project._id),
-        };
-      });
+      const projectsWithTasks = projectsRes.data.map((project: Project) => ({
+        ...project,
+        tasks: tasks.filter((task: Task) => task.projectId === project._id),
+      }));
 
       projects.value = projectsWithTasks;
       success.value = true;
@@ -44,4 +45,4 @@ export function useProjectsAndTasks() {
     projects,
     fetchProjectsAndTasks,
   };
-}
+});

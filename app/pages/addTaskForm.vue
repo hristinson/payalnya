@@ -1,13 +1,14 @@
 <template>
   <BackButton />
+
   <form @submit.prevent="submitForm" class="add-task-form">
     <div>
       <label for="project">Проект *</label>
       <select id="project" v-model="form.projectId" required>
         <option value="" disabled>Оберіть проект</option>
         <option
-          v-for="project in projects"
-          :key="project._id"
+          v-for="project in projectsStore.projects"
+          :key="project.id"
           :value="project._id"
         >
           {{ project.name }}
@@ -56,25 +57,28 @@
       />
     </div>
 
-    <button type="submit" :disabled="loading">
-      {{ loading ? "Додаємо..." : "Додати завдання" }}
+    <button type="submit" :disabled="tasksStore.loading">
+      {{ tasksStore.loading ? "Додаємо..." : "Додати завдання" }}
     </button>
 
-    <p v-if="message" :class="{ success: success, error: !success }">
-      {{ message }}
+    <p
+      v-if="tasksStore.message"
+      :class="{ success: tasksStore.success, error: !tasksStore.success }"
+    >
+      {{ tasksStore.message }}
     </p>
   </form>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted, computed } from "vue";
-import type { Project, Task } from "~/models";
-import { useTasks } from "../hooks/useTasks";
+import { reactive, computed, onMounted } from "vue";
 import BackButton from "~/components/BackButton.vue";
-import { useProjects } from "~/hooks/useProjects";
+import type { Task } from "~/models";
+import { useProjectsStore } from "~/stores/projects";
+import { useTasksStore } from "~/stores/tasks";
 
-const { loading, message, success, addTask } = useTasks();
-const { fetchProjects } = useProjects();
+const projectsStore = useProjectsStore();
+const tasksStore = useTasksStore();
 
 const form = reactive<Task>({
   projectId: "",
@@ -84,15 +88,14 @@ const form = reactive<Task>({
   dueDate: "",
 });
 
-const projects = ref<Project[]>([]);
 const minDate = computed(() => new Date().toISOString().split("T")[0]);
 
-onMounted(async () => {
-  projects.value = await fetchProjects();
+onMounted(() => {
+  projectsStore.fetchProjects();
 });
 
 const submitForm = async () => {
-  const result = await addTask(form);
+  const result = await tasksStore.addTask({ ...form });
   if (result) {
     form.projectId = "";
     form.title = "";

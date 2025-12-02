@@ -1,11 +1,13 @@
+import { defineStore } from "pinia";
 import { ref } from "vue";
 import axios from "axios";
 import type { Task } from "~/models";
 
-export function useTasks() {
+export const useTasksStore = defineStore("tasks", () => {
   const loading = ref(false);
   const message = ref("");
   const success = ref(false);
+  const tasks = ref<Task[]>([]);
 
   const addTask = async (taskData: Task) => {
     if (!taskData.projectId) {
@@ -24,8 +26,12 @@ export function useTasks() {
 
     try {
       const res = await axios.post("/.netlify/functions/tasks", taskData);
+
       message.value = `Завдання "${res.data.title}" успішно додано!`;
       success.value = true;
+
+      tasks.value.push(res.data);
+
       return res.data;
     } catch (err: any) {
       console.error(err);
@@ -34,6 +40,9 @@ export function useTasks() {
       return null;
     } finally {
       loading.value = false;
+      setTimeout(() => {
+        message.value = "";
+      }, 3000);
     }
   };
 
@@ -41,6 +50,7 @@ export function useTasks() {
     loading,
     message,
     success,
+    tasks,
     addTask,
   };
-}
+});

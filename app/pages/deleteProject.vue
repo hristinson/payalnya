@@ -1,36 +1,40 @@
 <template>
   <div class="project-list">
     <BackButton />
-    <div v-for="project in projects" :key="project.id" class="project-item">
+
+    <div
+      v-for="project in store.projects"
+      :key="project._id"
+      class="project-item"
+    >
       <span>{{ project.name }}</span>
+
       <button
-        @click="() => project._id && deleteProject(project._id)"
-        :disabled="loading"
+        @click="() => project._id && store.deleteProject(project._id)"
+        :disabled="store.loading"
       >
-        {{ loading ? "Видаляємо..." : "Видалити" }}
+        {{ store.loading ? "Видаляємо..." : "Видалити" }}
       </button>
     </div>
 
-    <p v-if="message" :class="{ success: success, error: !success }">
-      {{ message }}
+    <p
+      v-if="store.message"
+      :class="{ success: store.success, error: !store.success }"
+    >
+      {{ store.message }}
     </p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import type { Project } from "~/models";
-import BackButton from "../components/BackButton.vue";
-import { useProjects } from "~/hooks/useProjects";
+import BackButton from "~/components/BackButton.vue";
+import { useProjectsStore } from "~/stores/projects";
+import { onMounted } from "vue";
 
-const projects = ref<Project[]>([]);
-const loading = ref(false);
-const message = ref("");
-const success = ref(false);
-const { fetchProjects, deleteProject } = useProjects();
+const store = useProjectsStore();
 
-onMounted(async () => {
-  projects.value = await fetchProjects();
+onMounted(() => {
+  store.fetchProjects();
 });
 </script>
 
